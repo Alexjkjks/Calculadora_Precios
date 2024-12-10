@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comparador de Precios</title>
+  <style>
+    /* Estilos básicos */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .product-list {
+      margin-top: 20px;
+    }
+    .product {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .cheap {
+      background-color: #ccffcc; /* Verde claro */
+    }
+    .expensive {
+      background-color: #ffcccc; /* Rosado claro */
+    }
+    .unit-select {
+      background-color: #e0f7fa; /* Celeste */
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding: 5px;
+    }
+    button {
+      padding: 5px 10px;
+      margin-left: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .add-button {
+      background-color: #4caf50; /* Verde */
+      color: white;
+    }
+    .delete-button {
+      background-color: #f44336; /* Rojo */
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <h1>Comparador de Precios</h1>
+  <div>
+    <input type="number" id="price" placeholder="Costo ($CLP)" step="0.01">
+    <input type="number" id="quantity" placeholder="Cantidad">
+    <select id="unit" class="unit-select">
+      <option value="cc">cc</option>
+      <option value="ml">ml</option>
+      <option value="L">L</option>
+      <option value="gr">gr</option>
+      <option value="Kg">Kg</option>
+    </select>
+    <button class="add-button" onclick="addProduct()">AGREGAR PRODUCTO</button>
+  </div>
+
+  <div class="product-list" id="product-list"></div>
+
+  <script>
+    const products = [];
+
+    // Conversión de unidades a una base común
+    function convertToBase(quantity, unit) {
+      if (unit === "ml" || unit === "cc") return quantity; // Base para volumen
+      if (unit === "L") return quantity * 1000;
+      if (unit === "gr") return quantity; // Base para peso
+      if (unit === "Kg") return quantity * 1000;
+    }
+
+    // Agregar producto
+    function addProduct() {
+      const price = parseFloat(document.getElementById('price').value);
+      const quantity = parseFloat(document.getElementById('quantity').value);
+      const unit = document.getElementById('unit').value;
+
+      if (isNaN(price) || isNaN(quantity)) {
+        alert('Por favor, ingresa valores válidos.');
+        return;
+      }
+
+      const normalizedQuantity = convertToBase(quantity, unit);
+      const pricePerUnit = price / normalizedQuantity;
+
+      products.push({ price, quantity, unit, pricePerUnit });
+      renderProducts();
+    }
+
+    // Renderizar productos
+    function renderProducts() {
+      const productList = document.getElementById('product-list');
+      productList.innerHTML = '';
+
+      // Ordenar productos por precio por unidad
+      products.sort((a, b) => a.pricePerUnit - b.pricePerUnit);
+
+      products.forEach((product, index) => {
+        const productDiv = document.createElement('div');
+        productDiv.className = 'product';
+
+        if (index === 0) productDiv.classList.add('cheap');
+        if (index === products.length - 1) productDiv.classList.add('expensive');
+
+        productDiv.innerHTML = `
+          <span>Producto ${index + 1}: $${product.price.toFixed(2)} - ${product.quantity}${product.unit} ($${product.pricePerUnit.toFixed(2)} por unidad)</span>
+          <button class="delete-button" onclick="deleteProduct(${index})">Eliminar</button>
+        `;
+
+        productList.appendChild(productDiv);
+      });
+    }
+
+    // Eliminar producto
+    function deleteProduct(index) {
+      products.splice(index, 1);
+      renderProducts();
+    }
+  </script>
+</body>
+</html>
