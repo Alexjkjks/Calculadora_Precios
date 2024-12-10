@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -54,7 +53,9 @@
 </head>
 <body>
   <h1>Comparador de Precios</h1>
+  <!-- Formulario para ingresar datos -->
   <div>
+    <input type="text" id="productName" placeholder="Nombre del Producto">
     <input type="number" id="price" placeholder="Costo ($CLP)" step="0.01">
     <input type="number" id="quantity" placeholder="Cantidad">
     <select id="unit" class="unit-select">
@@ -67,54 +68,73 @@
     <button class="add-button" onclick="addProduct()">AGREGAR PRODUCTO</button>
   </div>
 
+  <!-- Lista de productos -->
   <div class="product-list" id="product-list"></div>
 
   <script>
+    // Lista para guardar productos
     const products = [];
 
-    // Conversión de unidades a una base común
+    /**
+     * Convertir cantidad a una unidad base para normalizar
+     * @param {number} quantity - Cantidad ingresada por el usuario
+     * @param {string} unit - Unidad seleccionada (cc, ml, L, gr, Kg)
+     * @returns {number} - Cantidad normalizada
+     */
     function convertToBase(quantity, unit) {
       if (unit === "ml" || unit === "cc") return quantity; // Base para volumen
-      if (unit === "L") return quantity * 1000;
+      if (unit === "L") return quantity * 1000; // 1L = 1000 ml
       if (unit === "gr") return quantity; // Base para peso
-      if (unit === "Kg") return quantity * 1000;
+      if (unit === "Kg") return quantity * 1000; // 1Kg = 1000 gr
     }
 
-    // Agregar producto
+    /**
+     * Agregar un producto a la lista
+     */
     function addProduct() {
+      // Obtener valores del formulario
+      const name = document.getElementById('productName').value;
       const price = parseFloat(document.getElementById('price').value);
       const quantity = parseFloat(document.getElementById('quantity').value);
       const unit = document.getElementById('unit').value;
 
-      if (isNaN(price) || isNaN(quantity)) {
-        alert('Por favor, ingresa valores válidos.');
+      // Validar entrada
+      if (!name || isNaN(price) || isNaN(quantity)) {
+        alert('Por favor, completa todos los campos correctamente.');
         return;
       }
 
+      // Normalizar cantidad y calcular precio por unidad
       const normalizedQuantity = convertToBase(quantity, unit);
       const pricePerUnit = price / normalizedQuantity;
 
-      products.push({ price, quantity, unit, pricePerUnit });
+      // Agregar producto al array
+      products.push({ name, price, quantity, unit, pricePerUnit });
       renderProducts();
     }
 
-    // Renderizar productos
+    /**
+     * Renderizar lista de productos
+     */
     function renderProducts() {
       const productList = document.getElementById('product-list');
-      productList.innerHTML = '';
+      productList.innerHTML = ''; // Limpiar lista
 
       // Ordenar productos por precio por unidad
       products.sort((a, b) => a.pricePerUnit - b.pricePerUnit);
 
+      // Renderizar cada producto
       products.forEach((product, index) => {
         const productDiv = document.createElement('div');
         productDiv.className = 'product';
 
+        // Destacar más barato y más caro
         if (index === 0) productDiv.classList.add('cheap');
         if (index === products.length - 1) productDiv.classList.add('expensive');
 
+        // Mostrar datos del producto
         productDiv.innerHTML = `
-          <span>Producto ${index + 1}: $${product.price.toFixed(2)} - ${product.quantity}${product.unit} ($${product.pricePerUnit.toFixed(2)} por unidad)</span>
+          <span><strong>${product.name}</strong>: $${product.price.toFixed(2)} - ${product.quantity}${product.unit} ($${product.pricePerUnit.toFixed(2)} por unidad)</span>
           <button class="delete-button" onclick="deleteProduct(${index})">Eliminar</button>
         `;
 
@@ -122,7 +142,10 @@
       });
     }
 
-    // Eliminar producto
+    /**
+     * Eliminar un producto de la lista
+     * @param {number} index - Índice del producto a eliminar
+     */
     function deleteProduct(index) {
       products.splice(index, 1);
       renderProducts();
